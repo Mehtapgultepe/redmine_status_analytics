@@ -84,4 +84,4 @@ bundle exec rails server
 ## 📘 Detaylı Kurulum
 
 Geliştirme ortamına özel, daha ayrıntılı kurulum ve yapılandırma adımları için
-**`development.md`** dosyasını inceleyebilirsiniz.
+**[development.md](development.md)** dosyasını inceleyebilirsiniz.
