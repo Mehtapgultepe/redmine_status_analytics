@@ -1,76 +1,145 @@
-Kurulum ve Yapılandırma
-Bu proje geliştirilmeye başlanmadan önce, macOS üzerinde gerekli bağımlılıklar ve veritabanı ortamı aşağıdaki adımlarla hazırlanmıştır.
+# 🛠️ Kurulum ve Yapılandırma (Development Guide)
 
-1. Sistem Gereksinimleri (Ruby & MySQL)
+Bu doküman, **Redmine Status Analytics Plugin** geliştirme sürecine başlamadan önce
+macOS üzerinde gerekli bağımlılıkların, veritabanı ortamının ve Redmine altyapısının
+nasıl hazırlandığını adım adım açıklamaktadır.
 
-Öncelikle Ruby ortamı ve veritabanı sunucusu kurulur.
+---
 
-Bash
-# Ruby'yi kur ve sürümü sabitle
+##  Sistem Gereksinimleri (Ruby & MySQL)
+
+Geliştirme ortamı için öncelikle Ruby ve MySQL kurulumu yapılmalıdır.
+
+###  Ruby Kurulumu (rbenv ile)
+
+```bash
 rbenv install 3.2.2
 rbenv global 3.2.2
+```
 
-# MySQL'i kur ve servisi başlat
+Ruby sürümünü kontrol edin:
+
+```bash
+ruby -v
+```
+
+---
+
+###  MySQL Kurulumu ve Servis Başlatma
+
+```bash
 brew install mysql
 brew services start mysql
-2. Veritabanı Oluşturma
+```
 
-MySQL sunucusuna bağlanıp Redmine için gerekli veritabanı ve kullanıcı izinleri tanımlanır.
+---
 
-Bash
-# MySQL konsoluna giriş yap
+##  Veritabanı Oluşturma
+
+MySQL sunucusuna bağlanarak Redmine için gerekli veritabanı ve kullanıcıyı oluşturun.
+
+###  MySQL Konsoluna Giriş
+
+```bash
 mysql -u root -p
-MySQL konsolu açıldıktan sonra aşağıdaki SQL komutlarını çalıştırın:
+```
 
-SQL
+###  SQL Komutları
+
+```sql
 CREATE DATABASE redmine CHARACTER SET utf8mb4;
-CREATE USER 'redmine'@'localhost' IDENTIFIED BY 'my_password';
-GRANT ALL PRIVILEGES ON redmine.* TO 'redmine'@'localhost';
+
+CREATE USER 'redmine'@'localhost'
+IDENTIFIED BY 'my_password';
+
+GRANT ALL PRIVILEGES ON redmine.*
+TO 'redmine'@'localhost';
+
 EXIT;
-3. Redmine Kaynak Kodunu İndirme
+```
 
-GitHub üzerinden güncel Redmine sürümü indirilir.
+---
 
-Bash
+##  Redmine Kaynak Kodunu İndirme
+
+Güncel Redmine sürümünü GitHub üzerinden klonlayın:
+
+```bash
 cd ~
 git clone https://github.com/redmine/redmine.git
 cd redmine
-4. Veritabanı Bağlantı Ayarları
+```
 
-Örnek ayar dosyası kopyalanır ve düzenlenir.
+---
 
-Bash
+##  Veritabanı Bağlantı Ayarları
+
+Örnek veritabanı yapılandırma dosyasını kopyalayın:
+
+```bash
 cp config/database.yml.example config/database.yml
+```
 
-# Dosyayı metin editörü ile açıp şifre/kullanıcı bilgilerini girin
+Dosyayı düzenleyerek kullanıcı adı ve şifre bilgilerini girin:
+
+```bash
 open -e config/database.yml
-5. Bağımlılıkların Yüklenmesi ve Kurulum
+```
 
-Gerekli Ruby kütüphaneleri (gem) yüklenir ve veritabanı tabloları oluşturulur.
+---
 
-Bash
-# Gereksiz veritabanı sürücülerini hariç tutarak kurulum yap
+##  Bağımlılıkların Yüklenmesi ve İlk Kurulum
+
+###  Gerekli Gem Paketlerinin Yüklenmesi
+
+(PostgreSQL ve SQLite hariç tutulmuştur)
+
+```bash
 bundle install --without postgresql sqlite
+```
 
-# Güvenlik anahtarını oluştur
+###  Güvenlik Anahtarı Oluşturma
+
+```bash
 bundle exec rake generate_secret_token
+```
 
-# Veritabanı tablolarını oluştur (Migration)
+###  Veritabanı Tablolarını Oluşturma
+
+```bash
 bundle exec rake db:migrate
+```
 
-# Varsayılan verileri yükle (Dil seçimi: tr)
+###  Varsayılan Verileri Yükleme (Dil: ing)
+
+```bash
 bundle exec rake redmine:load_default_data
-6. Sunucuyu Başlatma
+```
 
-Kurulum tamamlandıktan sonra uygulama sunucusu ayağa kaldırılır.
+---
 
-Bash
+## ▶️dSunucuyu Başlatma
+
+Kurulum tamamlandıktan sonra Redmine sunucusunu başlatın:
+
+```bash
 bundle exec rails server
-Erişim: Tarayıcınızda http://localhost:3000 adresine giderek kontrol edebilirsiniz.
+```
 
-7. Eklenti Geliştirme (Plugin Generation)
+🌐 Tarayıcıdan erişim:
+**[http://localhost:3000](http://localhost:3000)**
 
-Proje için gerekli eklenti iskeleti aşağıdaki komutla oluşturulmuştur.
+---
 
-Bash
+##  Eklenti Geliştirme (Plugin Generation)
+
+Redmine Status Analytics Plugin için temel eklenti iskeleti aşağıdaki komutla oluşturulmuştur:
+
+```bash
 bundle exec rails generate redmine_plugin redmine_status_analytics
+```
+
+Bu işlem sonrasında eklenti,
+`redmine/plugins/redmine_status_analytics` dizini altında oluşturulur.
+
+---
