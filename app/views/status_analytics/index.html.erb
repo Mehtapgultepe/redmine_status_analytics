@@ -1,7 +1,37 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<div class="box" style="width: 50%; margin-top: 20px;">
-  <h3>📊 Durum Dağılım Grafiği</h3>
-  <canvas id="myPieChart"></canvas>
+
+<h2>📊 Status Analytics Dashboard</h2>
+
+<div class="splitcontentleft">
+  <div class="box">
+    <h3>Total Workload: <span style="color:#778899"><%= @toplam %></span></h3>
+    <hr>
+    <table class="list issues odd-even">
+      <thead>
+        <tr>
+          <th>Status Name</th>
+          <th>Count</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @dagilim.each do |durum, sayi| %>
+          <tr class="issue">
+            <td><strong><%= durum.name %></strong></td>
+            <td><%= sayi %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="splitcontentright">
+  <div class="box">
+    <h3>Status Distribution Chart</h3>
+    <div style="height: 300px;">
+      <canvas id="myPieChart"></canvas>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -11,13 +41,29 @@
     data: {
       labels: <%= raw @etiketler.to_json %>,
       datasets: [{
-        label: 'İş Sayısı',
         data: <%= @veriler.to_json %>,
         backgroundColor: [
-          '#ff6384', '#36a2eb', '#cc65fe', '#ffce56', '#4bc0c0'
-        ]
+          '#FFB7B2', 
+          '#B2E2F2', 
+          '#B2F2BB', 
+          '#FDFD96', 
+          '#E0BBE4', 
+          '#FFDAC1', 
+          '#C7CEEA'  
+        ],
+        borderWidth: 1,
+        borderColor: '#ffffff'
       }]
+    },
+    options: { 
+      responsive: true, 
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      }
     }
   });
 </script>
- 
+
