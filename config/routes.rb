@@ -1,2 +1,1 @@
-# Plugin's routes
-# See: http://guides.rubyonrails.org/routing.html
+get 'status_analytics', :to => 'status_analytics#index'

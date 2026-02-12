@@ -1,8 +1,9 @@
 Redmine::Plugin.register :redmine_status_analytics do
   name 'Redmine Status Analytics plugin'
-  author 'Author name'
-  description 'This is a plugin for Redmine'
+  author 'Mehtap Gültepe'
+  description 'Bu eklenti iş durumlarını analiz eder.'
   version '0.0.1'
-  url 'http://example.com/path/to/plugin'
-  author_url 'http://example.com/about'
+
+  # Menüye ekleme satırı:
+  menu :top_menu, :status_analytics, { :controller => 'status_analytics', :action => 'index' }, :caption => 'Analiz Paneli'
 end

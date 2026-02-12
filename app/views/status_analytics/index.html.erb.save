@@ -1,0 +1,8 @@
+<h2>Durum Analiz Paneli</h2>
+
+<div class="box">
+  <p>Ruby'den gelen mesaj:</p>
+  <h3><%= @mesaj %></h3>
+</div>
+
+
