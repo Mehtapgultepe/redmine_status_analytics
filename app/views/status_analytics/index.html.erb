@@ -1,69 +1,67 @@
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<h2><%= l(:label_status_analytics) %>: <%= @project.name %></h2>
 
-<h2>📊 Status Analytics Dashboard</h2>
-
-<div class="splitcontentleft">
-  <div class="box">
-    <h3>Total Workload: <span style="color:#778899"><%= @toplam %></span></h3>
-    <hr>
-    <table class="list issues odd-even">
-      <thead>
-        <tr>
-          <th>Status Name</th>
-          <th>Count</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @dagilim.each do |durum, sayi| %>
-          <tr class="issue">
-            <td><strong><%= durum.name %></strong></td>
-            <td><%= sayi %></td>
+<div class="splitcontent">
+  <div class="splitcontentleft" style="width: 45%;">
+    <div class="box">
+      <h3>Durum Bazlı Zaman Analizi</h3>
+      <table class="list">
+        <thead>
+          <tr>
+            <th>Durum Adı</th>
+            <th>Toplam Süre (Gün)</th>
           </tr>
-        <% end %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% if @durum_sureleri.any? %>
+            <% @durum_sureleri.each do |isim, saniye| %>
+              <tr>
+                <td class="name"><strong><%= isim %></strong></td>
+                <td class="hours"><%= (saniye / 86400).round(2) %> gün</td>
+              </tr>
+            <% end %>
+          <% else %>
+            <tr><td colspan="2">Hesaplanmış veri bulunamadı.</td></tr>
+          <% end %>
+        </tbody>
+      </table>
+      <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+        * Süreler, iş kayıtlarının tarihçesi (journals) üzerinden hesaplanmıştır.
+      </p>
+    </div>
   </div>
-</div>
 
-<div class="splitcontentright">
-  <div class="box">
-    <h3>Status Distribution Chart</h3>
-    <div style="height: 300px;">
-      <canvas id="myPieChart"></canvas>
+  <div class="splitcontentright" style="width: 50%;">
+    <div class="box">
+      <canvas id="lifecycleChart" width="400" height="400"></canvas>
     </div>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  const ctx = document.getElementById('myPieChart').getContext('2d');
-  new Chart(ctx, {
-    type: 'pie',
-    data: {
-      labels: <%= raw @etiketler.to_json %>,
-      datasets: [{
-        data: <%= @veriler.to_json %>,
-        backgroundColor: [
-          '#FFB7B2', 
-          '#B2E2F2', 
-          '#B2F2BB', 
-          '#FDFD96', 
-          '#E0BBE4', 
-          '#FFDAC1', 
-          '#C7CEEA'  
-        ],
-        borderWidth: 1,
-        borderColor: '#ffffff'
-      }]
-    },
-    options: { 
-      responsive: true, 
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'bottom'
+  document.addEventListener("DOMContentLoaded", function() {
+    const ctx = document.getElementById('lifecycleChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: <%= raw @etiketler.to_json %>,
+        datasets: [{
+          data: <%= raw @veriler.to_json %>,
+          backgroundColor: [
+            '#FFCDD2', '#F8BBD0', '#E1BEE7', '#D1C4E9', 
+            '#C5CAE9', '#BBDEFB', '#B3E5FC', '#B2EBF2'
+          ],
+          borderColor: '#ffffff',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' },
+          title: { display: true, text: 'Zaman Dağılımı (Gün Bazında)' }
         }
       }
-    }
+    });
   });
 </script>
-
