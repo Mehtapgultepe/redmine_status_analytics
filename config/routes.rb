@@ -1,3 +1,1 @@
-resources :projects do
-  get 'status_analytics', :to => 'status_analytics#index'
-end
+get 'projects/:project_id/status_analytics', :to => 'status_analytics#index'

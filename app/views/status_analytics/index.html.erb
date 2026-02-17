@@ -1,67 +1,73 @@
 <h2><%= l(:label_status_analytics) %>: <%= @project.name %></h2>
 
 <div class="splitcontent">
-  <div class="splitcontentleft" style="width: 45%;">
+  <div class="splitcontentleft" style="width: 48%;">
     <div class="box">
-      <h3>Durum Bazlı Zaman Analizi</h3>
-      <table class="list">
-        <thead>
-          <tr>
-            <th>Durum Adı</th>
-            <th>Toplam Süre (Gün)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% if @durum_sureleri.any? %>
-            <% @durum_sureleri.each do |isim, saniye| %>
-              <tr>
-                <td class="name"><strong><%= isim %></strong></td>
-                <td class="hours"><%= (saniye / 86400).round(2) %> gün</td>
-              </tr>
-            <% end %>
-          <% else %>
-            <tr><td colspan="2">Hesaplanmış veri bulunamadı.</td></tr>
-          <% end %>
-        </tbody>
-      </table>
-      <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
-        * Süreler, iş kayıtlarının tarihçesi (journals) üzerinden hesaplanmıştır.
-      </p>
+      <h3>Kullanıcı Bazlı Performans (Gün)</h3>
+      <canvas id="userChart" style="max-height: 250px;"></canvas>
     </div>
   </div>
-
-  <div class="splitcontentright" style="width: 50%;">
+  <div class="splitcontentright" style="width: 48%;">
     <div class="box">
-      <canvas id="lifecycleChart" width="400" height="400"></canvas>
+      <h3>Kategori Bazlı Dağılım (Gün)</h3>
+      <canvas id="categoryChart" style="max-height: 250px;"></canvas>
     </div>
   </div>
 </div>
 
+<div class="box" style="margin-top: 20px;">
+  <h3>Detaylı İş Listesi (Sıralanabilir)</h3>
+  <table id="analyticsTable" class="list">
+    <thead>
+      <tr>
+        <th># ID</th>
+        <th>Konu</th>
+        <th>Atanan Kişi</th>
+        <th>Kategori</th>
+        <th>Toplam Süre (Gün)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @is_listesi.each do |is| %>
+        <tr>
+          <td><%= is[:id] %></td>
+          <td><%= is[:subject] %></td>
+          <td><%= is[:user] %></td>
+          <td><%= is[:category] %></td>
+          <td><%= (is[:total_time] / 86400).round(3) %> gün</td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
-    const ctx = document.getElementById('lifecycleChart').getContext('2d');
+  function createChart(id, labels, data) {
+    const ctx = document.getElementById(id).getContext('2d');
     new Chart(ctx, {
-      type: 'pie',
+      type: 'bar',
       data: {
-        labels: <%= raw @etiketler.to_json %>,
+        labels: labels,
         datasets: [{
-          data: <%= raw @veriler.to_json %>,
-          backgroundColor: [
-            '#FFCDD2', '#F8BBD0', '#E1BEE7', '#D1C4E9', 
-            '#C5CAE9', '#BBDEFB', '#B3E5FC', '#B2EBF2'
-          ],
-          borderColor: '#ffffff',
-          borderWidth: 2
+          label: 'Gün',
+          data: data,
+          backgroundColor: 'rgba(255, 182, 193, 0.6)', // İstediğin tatlı pembe renk
+          borderColor: 'rgba(255, 105, 180, 1)',
+          borderWidth: 1
         }]
       },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { position: 'bottom' },
-          title: { display: true, text: 'Zaman Dağılımı (Gün Bazında)' }
-        }
-      }
+      options: { responsive: true, plugins: { legend: { display: false } } }
     });
+  }
+
+  $(document).ready(function() {
+    createChart('userChart', <%= raw @user_labels.to_json %>, <%= raw @user_data.to_json %>);
+    createChart('categoryChart', <%= raw @cat_labels.to_json %>, <%= raw @cat_data.to_json %>);
+    $('#analyticsTable').DataTable({ "order": [[ 4, "desc" ]], "language": { "search": "Hızlı Ara:" } });
   });
 </script>
