@@ -3,71 +3,116 @@
 <div class="splitcontent">
   <div class="splitcontentleft" style="width: 48%;">
     <div class="box">
-      <h3>Kullanıcı Bazlı Performans (Gün)</h3>
+      <h3>Kullanıcı Performansı (Gün)</h3>
       <canvas id="userChart" style="max-height: 250px;"></canvas>
     </div>
   </div>
   <div class="splitcontentright" style="width: 48%;">
     <div class="box">
-      <h3>Kategori Bazlı Dağılım (Gün)</h3>
+      <h3>Kategori Dağılımı (Gün)</h3>
       <canvas id="categoryChart" style="max-height: 250px;"></canvas>
     </div>
   </div>
 </div>
 
 <div class="box" style="margin-top: 20px;">
-  <h3>Detaylı İş Listesi (Sıralanabilir)</h3>
+  <h3>İş Listesi (Detay için Konuya Tıklayın)</h3>
   <table id="analyticsTable" class="list">
     <thead>
       <tr>
         <th># ID</th>
         <th>Konu</th>
         <th>Atanan Kişi</th>
+        <th>Son Değişiklik Yapan</th>
         <th>Kategori</th>
-        <th>Toplam Süre (Gün)</th>
+        <th>Süre (Gün)</th>
       </tr>
     </thead>
     <tbody>
       <% @is_listesi.each do |is| %>
         <tr>
           <td><%= is[:id] %></td>
-          <td><%= is[:subject] %></td>
+          <td style="color: #d63384; cursor: pointer; font-weight: bold;" 
+              onclick='showIssueDetail(<%= is[:subject].to_json.html_safe %>, <%= is[:lifecycle].to_json.html_safe %>)'>
+            <%= is[:subject] %>
+          </td>
           <td><%= is[:user] %></td>
+          <td><%= is[:last_updater] %></td>
           <td><%= is[:category] %></td>
-          <td><%= (is[:total_time] / 86400).round(3) %> gün</td>
+          <td><%= (is[:total_time] / 86400).round(3) %></td>
         </tr>
       <% end %>
     </tbody>
   </table>
 </div>
 
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
-<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+<div id="issueModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.7);">
+  <div style="background:#fff; margin:10% auto; padding:20px; width:450px; border-radius:12px; text-align:center;">
+    <span onclick="document.getElementById('issueModal').style.display='none'" style="float:right; cursor:pointer; font-size:24px;">&times;</span>
+    <h3 id="modalTitle" style="color:#d63384; margin-bottom:20px;">İş Detayı</h3>
+    <div style="width: 300px; margin: 0 auto;">
+      <canvas id="issueDetailChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-  function createChart(id, labels, data) {
-    const ctx = document.getElementById(id).getContext('2d');
-    new Chart(ctx, {
+  let detailChart;
+
+  window.showIssueDetail = function(subject, lifecycle) {
+    document.getElementById('modalTitle').innerText = subject;
+    document.getElementById('issueModal').style.display = 'block';
+    const ctx = document.getElementById('issueDetailChart').getContext('2d');
+    
+    if (detailChart) detailChart.destroy();
+    detailChart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: lifecycle.map(l => l.label),
+        datasets: [{
+          data: lifecycle.map(l => l.value),
+          backgroundColor: ['#ffb6c1', '#ffc0cb', '#db7093', '#ff69b4', '#e75480']
+        }]
+      }
+    });
+  };
+
+  document.addEventListener("DOMContentLoaded", function() {
+    new Chart(document.getElementById('userChart'), {
       type: 'bar',
       data: {
-        labels: labels,
+        labels: <%= raw @user_labels.to_json %>,
         datasets: [{
           label: 'Gün',
-          data: data,
-          backgroundColor: 'rgba(255, 182, 193, 0.6)', // İstediğin tatlı pembe renk
-          borderColor: 'rgba(255, 105, 180, 1)',
-          borderWidth: 1
+          data: <%= raw @user_data.to_json %>,
+          backgroundColor: 'rgba(255,182,193,0.6)'
         }]
       },
       options: { responsive: true, plugins: { legend: { display: false } } }
     });
-  }
 
-  $(document).ready(function() {
-    createChart('userChart', <%= raw @user_labels.to_json %>, <%= raw @user_data.to_json %>);
-    createChart('categoryChart', <%= raw @cat_labels.to_json %>, <%= raw @cat_data.to_json %>);
-    $('#analyticsTable').DataTable({ "order": [[ 4, "desc" ]], "language": { "search": "Hızlı Ara:" } });
+    new Chart(document.getElementById('categoryChart'), {
+      type: 'bar',
+      data: {
+        labels: <%= raw @cat_labels.to_json %>,
+        datasets: [{
+          label: 'Gün',
+          data: <%= raw @cat_data.to_json %>,
+          backgroundColor: 'rgba(255,182,193,0.6)'
+        }]
+      },
+      options: { responsive: true, plugins: { legend: { display: false } } }
+    });
+
+    if (typeof jQuery !== 'undefined') {
+      jQuery('#analyticsTable').DataTable({
+        "order": [[5, "desc"]],
+        "language": { "search": "Hızlı Ara:" }
+      });
+    }
   });
 </script>

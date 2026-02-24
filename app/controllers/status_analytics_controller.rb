@@ -1,7 +1,7 @@
 class StatusAnalyticsController < ApplicationController
   menu_item :status_analytics
   before_action :find_project
-  before_action :authorize # Modülün açık olup olmadığını kontrol eder.
+  before_action :authorize
 
   def index
     @issues = @project.issues
@@ -16,13 +16,35 @@ class StatusAnalyticsController < ApplicationController
 
       kullanici_adi = issue.assigned_to ? issue.assigned_to.name : "Atanmamış"
       kategori_adi = issue.category ? issue.category.name : "Kategorisiz"
+      
+      son_degisiklik = durum_degisimleri.last
+      last_updater = son_degisiklik ? son_degisiklik.user.name : issue.author.name
 
-      is_verisi = { id: issue.id, subject: issue.subject, user: kullanici_adi, category: kategori_adi, total_time: 0 }
+      is_detay_grafik = Hash.new(0)
+      gecmis_zaman_detay = issue.created_on
+      
+      durum_degisimleri.each do |j|
+        old_val = j.details.find_by(prop_key: 'status_id').old_value
+        old_st = IssueStatus.find_by(id: old_val)
+        is_detay_grafik[old_st.name] += (j.created_on - gecmis_zaman_detay) if old_st
+        gecmis_zaman_detay = j.created_on
+      end
+      is_detay_grafik[issue.status.name] += (Time.now - gecmis_zaman_detay)
 
+      is_verisi = {
+        id: issue.id,
+        subject: issue.subject,
+        user: kullanici_adi,
+        last_updater: last_updater,
+        category: kategori_adi,
+        total_time: 0,
+        lifecycle: is_detay_grafik.map { |k, v| { label: k, value: (v / 3600).round(2) } }
+      }
+
+      gecmis_zaman = issue.created_on
       durum_degisimleri.each do |journal|
         su_anki_durum_id = journal.details.find_by(prop_key: 'status_id').old_value
         durum_nesnesi = IssueStatus.find_by(id: su_anki_durum_id)
-        
         if durum_nesnesi
           gecen_sure = journal.created_on - gecmis_zaman
           @durum_sureleri[durum_nesnesi.name] += gecen_sure
@@ -49,10 +71,10 @@ class StatusAnalyticsController < ApplicationController
   end
 
   private
+
   def find_project
     @project = Project.find(params[:project_id])
   rescue ActiveRecord::RecordNotFound
     render_404
   end
 end
-
