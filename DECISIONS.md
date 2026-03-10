@@ -12,9 +12,13 @@ Grafik kütüphanesi ararken Chart.js ve Recharts'a baktım. Recharts React gere
 
 Bunu veritabanında hesaplatmak yerine Ruby'de yapmayı tercih ettim. Redmine'in journal tablosu zaten zaman damgalarını tutuyor, iki kayıt arasındaki farkı almak yeterliydi. Ayrı bir migration yazmadan mevcut yapıyla çalışmak daha mantıklı geldi.
 
-## N+1 sorgu
+## N+1 sorgu ve Zaman Karmaşıklığı
 
 Başta fark etmedim. Küçük veriyle test ettiğimde sorun görünmüyordu. Sonradan her döngü adımında veritabanına gidildiğini anlayınca `includes()` ekledim. Projedeki kayıt sayısı arttıkça performansın düşmemesi için gerekli.
+
+Controller'daki döngü yapısı iç içe üç döngüden oluşuyor — issue'lar, journal'lar ve detail'lar. Zaman karmaşıklığı **O(n × m × k)** — n issue sayısı, m journal sayısı, k detail sayısı. m ve k pratikte küçük sabit değerler olduğundan gerçekte **O(n)** gibi davranıyor.
+
+`includes()` eklemeden önce her döngü adımında SQL sorgusu açılıyordu — bu Big-O değerini değiştirmiyor ama veritabanı bağlantı maliyeti sabit faktörü çok büyütüyordu. `includes()` ile veri bir kerede belleğe alındığından döngüler bellekte çalışıyor, gerçek dünya performansı önemli ölçüde iyileşti.
 
 ## json_escape
 
