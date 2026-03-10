@@ -33,7 +33,7 @@
         <tr>
           <td><%= is[:id] %></td>
           <td style="color: #d63384; cursor: pointer; font-weight: bold;" 
-              onclick='showIssueDetail(<%= is[:subject].to_json.html_safe %>, <%= is[:lifecycle].to_json.html_safe %>)'>
+               onclick='showIssueDetail(<%= json_escape(is[:subject].to_json) %>, <%= json_escape(is[:lifecycle].to_json) %>)'>
             <%= is[:subject] %>
           </td>
           <td><%= is[:user] %></td>
