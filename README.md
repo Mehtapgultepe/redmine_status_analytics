@@ -54,7 +54,7 @@ Redmine ana dizinindeki `plugins` klasörüne gidin ve projeyi klonlayın.
 
 ```bash
 cd redmine/plugins
-git clone https://github.com/mehtapgultepe/redmine-status-analytics-plugin.git redmine_status_analytics
+git clone https://github.com/Mehtapgultepe/redmine_status_analytics.git redmine_status_analytics
 ```
 
 ---
