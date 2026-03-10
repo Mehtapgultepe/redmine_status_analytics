@@ -4,13 +4,13 @@
   <div class="splitcontentleft" style="width: 48%;">
     <div class="box">
       <h3>Kullanıcı Performansı (Gün)</h3>
-      <canvas id="userChart" style="max-height: 250px;"></canvas>
+      <div id="userChart"></div>
     </div>
   </div>
   <div class="splitcontentright" style="width: 48%;">
     <div class="box">
       <h3>Kategori Dağılımı (Gün)</h3>
-      <canvas id="categoryChart" style="max-height: 250px;"></canvas>
+      <div id="categoryChart"></div>
     </div>
   </div>
 </div>
@@ -32,7 +32,7 @@
       <% @is_listesi.each do |is| %>
         <tr>
           <td><%= is[:id] %></td>
-          <td style="color: #d63384; cursor: pointer; font-weight: bold;" 
+          <td style="color: #d63384; cursor: pointer; font-weight: bold;"
                onclick='showIssueDetail(<%= json_escape(is[:subject].to_json) %>, <%= json_escape(is[:lifecycle].to_json) %>)'>
             <%= is[:subject] %>
           </td>
@@ -59,15 +59,74 @@
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 
 <script>
+  function createD3Chart(containerId, labels, data) {
+    const margin = { top: 20, right: 20, bottom: 60, left: 50 };
+    const width = 400 - margin.left - margin.right;
+    const height = 250 - margin.top - margin.bottom;
+
+    const svg = d3.select("#" + containerId)
+      .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const dataset = labels.map((label, i) => ({ label, value: data[i] }));
+
+    const x = d3.scaleBand()
+      .domain(dataset.map(d => d.label))
+      .range([0, width])
+      .padding(0.3);
+
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(dataset, d => d.value)])
+      .nice()
+      .range([height, 0]);
+
+    svg.append("g")
+      .attr("transform", `translate(0,${height})`)
+      .call(d3.axisBottom(x))
+      .selectAll("text")
+      .attr("transform", "rotate(-30)")
+      .style("text-anchor", "end")
+      .style("font-size", "11px");
+
+    svg.append("g")
+      .call(d3.axisLeft(y).ticks(5));
+
+    svg.selectAll(".bar")
+      .data(dataset)
+      .enter()
+      .append("rect")
+      .attr("class", "bar")
+      .attr("x", d => x(d.label))
+      .attr("y", d => y(d.value))
+      .attr("width", x.bandwidth())
+      .attr("height", d => height - y(d.value))
+      .attr("fill", "rgba(255,182,193,0.8)")
+      .attr("rx", 3);
+
+    svg.selectAll(".label")
+      .data(dataset)
+      .enter()
+      .append("text")
+      .attr("x", d => x(d.label) + x.bandwidth() / 2)
+      .attr("y", d => y(d.value) - 5)
+      .attr("text-anchor", "middle")
+      .style("font-size", "10px")
+      .text(d => d.value > 0 ? d.value.toFixed(1) : "");
+  }
+
   let detailChart;
 
   window.showIssueDetail = function(subject, lifecycle) {
     document.getElementById('modalTitle').innerText = subject;
     document.getElementById('issueModal').style.display = 'block';
     const ctx = document.getElementById('issueDetailChart').getContext('2d');
-    
+
     if (detailChart) detailChart.destroy();
     detailChart = new Chart(ctx, {
       type: 'pie',
@@ -82,31 +141,8 @@
   };
 
   document.addEventListener("DOMContentLoaded", function() {
-    new Chart(document.getElementById('userChart'), {
-      type: 'bar',
-      data: {
-        labels: <%= raw @user_labels.to_json %>,
-        datasets: [{
-          label: 'Gün',
-          data: <%= raw @user_data.to_json %>,
-          backgroundColor: 'rgba(255,182,193,0.6)'
-        }]
-      },
-      options: { responsive: true, plugins: { legend: { display: false } } }
-    });
-
-    new Chart(document.getElementById('categoryChart'), {
-      type: 'bar',
-      data: {
-        labels: <%= raw @cat_labels.to_json %>,
-        datasets: [{
-          label: 'Gün',
-          data: <%= raw @cat_data.to_json %>,
-          backgroundColor: 'rgba(255,182,193,0.6)'
-        }]
-      },
-      options: { responsive: true, plugins: { legend: { display: false } } }
-    });
+    createD3Chart('userChart', <%= raw @user_labels.to_json %>, <%= raw @user_data.to_json %>);
+    createD3Chart('categoryChart', <%= raw @cat_labels.to_json %>, <%= raw @cat_data.to_json %>);
 
     if (typeof jQuery !== 'undefined') {
       jQuery('#analyticsTable').DataTable({
