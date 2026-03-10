@@ -27,3 +27,7 @@ View'da `html_safe` kullanıyordum, sonradan bunun XSS açığı oluşturduğunu
 ## Modal
 
 Lifecycle detayı için ayrı sayfa açmak istemedim. Kullanıcı listeye bakıyor, bir işe tıklıyor, detayı görüyor — aynı sayfada kalması daha kullanışlı.
+
+## D3.js
+
+Bar chart'ları başta Chart.js ile yazmıştım. Sonradan D3.js ile yeniden yazdım. Chart.js kullanıma hazır grafikler sunuyor, D3 ise SVG üzerinde tam kontrol sağlıyor — eksen, bar boyutu, renk, pozisyon gibi her şeyi kendin belirliyorsun. Bu esneklik daha fazla öğrenme gerektiriyor ama görsel üzerinde çok daha fazla kontrol sağlıyor. MIT lisanslı ve açık kaynak.
