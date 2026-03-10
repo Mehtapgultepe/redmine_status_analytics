@@ -1,4 +1,4 @@
-k# 🛠️ Kurulum ve Yapılandırma (Development Guide)
+# 🛠️ Kurulum ve Yapılandırma (Development Guide)
 
 Bu doküman, Redmine Status Analytics Plugin geliştirme sürecine başlamadan önce macOS üzerinde gerekli bağımlılıkların, veritabanı ortamının ve Redmine altyapısının nasıl hazırlandığını adım adım açıklamaktadır.
 
