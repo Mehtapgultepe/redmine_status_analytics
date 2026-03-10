@@ -1,16 +1,14 @@
-# 🛠️ Kurulum ve Yapılandırma (Development Guide)
+k# 🛠️ Kurulum ve Yapılandırma (Development Guide)
 
-Bu doküman, **Redmine Status Analytics Plugin** geliştirme sürecine başlamadan önce
-macOS üzerinde gerekli bağımlılıkların, veritabanı ortamının ve Redmine altyapısının
-nasıl hazırlandığını adım adım açıklamaktadır.
+Bu doküman, Redmine Status Analytics Plugin geliştirme sürecine başlamadan önce macOS üzerinde gerekli bağımlılıkların, veritabanı ortamının ve Redmine altyapısının nasıl hazırlandığını adım adım açıklamaktadır.
 
 ---
 
-##  Sistem Gereksinimleri (Ruby & MySQL)
+## Sistem Gereksinimleri (Ruby & MySQL)
 
 Geliştirme ortamı için öncelikle Ruby ve MySQL kurulumu yapılmalıdır.
 
-###  Ruby Kurulumu (rbenv ile)
+### Ruby Kurulumu (rbenv ile)
 
 ```bash
 rbenv install 3.2.2
@@ -23,9 +21,7 @@ Ruby sürümünü kontrol edin:
 ruby -v
 ```
 
----
-
-###  MySQL Kurulumu ve Servis Başlatma
+### MySQL Kurulumu ve Servis Başlatma
 
 ```bash
 brew install mysql
@@ -34,17 +30,17 @@ brew services start mysql
 
 ---
 
-##  Veritabanı Oluşturma
+## Veritabanı Oluşturma
 
 MySQL sunucusuna bağlanarak Redmine için gerekli veritabanı ve kullanıcıyı oluşturun.
 
-###  MySQL Konsoluna Giriş
+### MySQL Konsoluna Giriş
 
 ```bash
 mysql -u root -p
 ```
 
-###  SQL Komutları
+### SQL Komutları
 
 ```sql
 CREATE DATABASE redmine CHARACTER SET utf8mb4;
@@ -60,7 +56,7 @@ EXIT;
 
 ---
 
-##  Redmine Kaynak Kodunu İndirme
+## Redmine Kaynak Kodunu İndirme
 
 Güncel Redmine sürümünü GitHub üzerinden klonlayın:
 
@@ -72,7 +68,7 @@ cd redmine
 
 ---
 
-##  Veritabanı Bağlantı Ayarları
+## Veritabanı Bağlantı Ayarları
 
 Örnek veritabanı yapılandırma dosyasını kopyalayın:
 
@@ -88,29 +84,28 @@ open -e config/database.yml
 
 ---
 
-##  Bağımlılıkların Yüklenmesi ve İlk Kurulum
+## Bağımlılıkların Yüklenmesi ve İlk Kurulum
 
-###  Gerekli Gem Paketlerinin Yüklenmesi
-
+### Gerekli Gem Paketlerinin Yüklenmesi
 (PostgreSQL ve SQLite hariç tutulmuştur)
 
 ```bash
 bundle install --without postgresql sqlite
 ```
 
-###  Güvenlik Anahtarı Oluşturma
+### Güvenlik Anahtarı Oluşturma
 
 ```bash
 bundle exec rake generate_secret_token
 ```
 
-###  Veritabanı Tablolarını Oluşturma
+### Veritabanı Tablolarını Oluşturma
 
 ```bash
 bundle exec rake db:migrate
 ```
 
-###  Varsayılan Verileri Yükleme (Dil: ing)
+### Varsayılan Verileri Yükleme (Dil: ing)
 
 ```bash
 bundle exec rake redmine:load_default_data
@@ -118,7 +113,7 @@ bundle exec rake redmine:load_default_data
 
 ---
 
-## ▶️dSunucuyu Başlatma
+## ▶️ Sunucuyu Başlatma
 
 Kurulum tamamlandıktan sonra Redmine sunucusunu başlatın:
 
@@ -126,12 +121,11 @@ Kurulum tamamlandıktan sonra Redmine sunucusunu başlatın:
 bundle exec rails server
 ```
 
-🌐 Tarayıcıdan erişim:
-**[http://localhost:3000](http://localhost:3000)**
+🌐 Tarayıcıdan erişim: **http://localhost:3000**
 
 ---
 
-##  Eklenti Geliştirme (Plugin Generation)
+## Eklenti Geliştirme (Plugin Generation)
 
 Redmine Status Analytics Plugin için temel eklenti iskeleti aşağıdaki komutla oluşturulmuştur:
 
@@ -139,7 +133,20 @@ Redmine Status Analytics Plugin için temel eklenti iskeleti aşağıdaki komutl
 bundle exec rails generate redmine_plugin redmine_status_analytics
 ```
 
-Bu işlem sonrasında eklenti,
-`redmine/plugins/redmine_status_analytics` dizini altında oluşturulur.
+Bu işlem sonrasında eklenti, `redmine/plugins/redmine_status_analytics` dizini altında oluşturulur.
 
 ---
+
+## Eklentiyi Mevcut Redmine'e Kurma
+
+Redmine kuruluysa eklentiyi eklemek için:
+
+```bash
+cd redmine/plugins
+git clone https://github.com/Mehtapgultepe/redmine_status_analytics.git
+cd ..
+bundle exec rake redmine:plugins:migrate RAILS_ENV=development
+bundle exec rails server
+```
+
+Ardından projeye gir → Settings → Modules → Status Analytics'i aktif et.
